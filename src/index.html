@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kzoro Music | The Final Masterpiece</title>
+    <link rel="icon" href="./avt.jpg" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #09090b;
+            --panel-bg: rgba(24, 24, 27, 0.75);
+            --primary: #f43f5e; 
+            --primary-glow: rgba(244, 63, 94, 0.5);
+            --secondary: #8b5cf6; 
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+
+        body {
+            background-color: var(--bg-dark); color: var(--text-main);
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+            background-image: radial-gradient(circle at 10% 20%, rgba(244, 63, 94, 0.15), transparent 30%),
+                              radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.15), transparent 30%);
+        }
+
+        /* --- LAYOUT CHÍNH --- */
+        .app-container { display: flex; flex: 1; overflow: hidden; padding: 15px; gap: 15px; }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 290px; background: var(--panel-bg); border: 1px solid var(--glass-border);
+            border-radius: 20px; padding: 25px 20px; display: flex; flex-direction: column;
+            backdrop-filter: blur(25px); z-index: 10;
+        }
+        .logo { font-size: 1.6rem; font-weight: 800; display: flex; align-items: center; gap: 12px; margin-bottom: 30px; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; color: transparent; }
+        
+        .nav-menu { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .nav-item {
+            display: flex; align-items: center; gap: 15px; padding: 12px 18px; border-radius: 12px;
+            color: var(--text-muted); text-decoration: none; font-weight: 500; cursor: pointer; transition: all 0.3s;
+        }
+        .nav-item:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.05); }
+        .nav-item.active { background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(139, 92, 246, 0.2)); color: var(--text-main); border: 1px solid var(--glass-border); box-shadow: 0 4px 15px var(--primary-glow); }
+
+        .divider { height: 1px; background: var(--glass-border); margin: 15px 0; }
+
+        .btn-vip {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; transition: 0.3s;
+            box-shadow: 0 5px 20px var(--primary-glow); margin-bottom: 12px; font-size: 0.95rem;
+        }
+        .btn-vip:hover { transform: translateY(-3px); box-shadow: 0 8px 25px var(--primary-glow); filter: brightness(1.1); }
+        
+        .btn-ghost { background: transparent; border: 1px dashed var(--text-muted); color: var(--text-muted); padding: 10px; border-radius: 12px; width: 100%; cursor: pointer; transition: 0.2s; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px;}
+        .btn-ghost:hover { border-color: var(--text-main); color: var(--text-main); }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1; background: var(--panel-bg); border: 1px solid var(--glass-border);
+            border-radius: 20px; backdrop-filter: blur(25px); display: flex; flex-direction: column; overflow: hidden; position: relative;
+        }
+
+        .header { padding: 25px 35px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
+        .page-title { font-size: 1.8rem; font-weight: 700; }
+        
+        .search-box { position: relative; flex: 1; max-width: 500px; display: flex; gap: 10px;}
+        .search-box i { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .search-box input {
+            flex: 1; padding: 15px 20px 15px 50px; border-radius: 30px; border: 1px solid var(--glass-border);
+            background: rgba(0,0,0,0.4); color: white; font-size: 1rem; outline: none; transition: 0.3s;
+        }
+        .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); background: rgba(0,0,0,0.6);}
+
+        .content-area { flex: 1; overflow-y: auto; padding: 25px 35px; }
+        
+        /* List Nhạc */
+        .song-list { display: flex; flex-direction: column; gap: 10px; }
+        .song-card {
+            display: flex; align-items: center; padding: 10px 20px; border-radius: 16px; background: rgba(255,255,255,0.02);
+            border: 1px solid transparent; cursor: pointer; transition: 0.3s; position: relative;
+        }
+        .song-card:hover { background: rgba(255,255,255,0.06); border-color: var(--glass-border); transform: translateX(5px); }
+        .song-card.playing { background: linear-gradient(90deg, rgba(244, 63, 94, 0.15), transparent); border-left: 4px solid var(--primary); }
+        
+        .s-index { width: 30px; font-weight: bold; color: var(--text-muted); text-align: center; }
+        .s-img { width: 55px; height: 55px; border-radius: 12px; object-fit: cover; margin: 0 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);}
+        .s-info { flex: 1; display: flex; flex-direction: column; overflow: hidden; white-space: nowrap; }
+        .s-title { font-weight: 600; font-size: 1.1rem; margin-bottom: 5px; text-overflow: ellipsis; overflow: hidden;}
+        .s-artist { font-size: 0.85rem; color: var(--text-muted); }
+        
+        .tag { padding: 3px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: bold; color: white; margin-right: 8px;}
+        .tag-online { background: linear-gradient(45deg, #ef4444, #f97316); }
+        .tag-local { background: var(--secondary); }
+
+        .s-actions { display: flex; gap: 15px; opacity: 0; transition: 0.3s; }
+        .song-card:hover .s-actions { opacity: 1; }
+        .btn-icon { background: rgba(255,255,255,0.1); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;}
+        .btn-icon:hover { background: var(--primary); box-shadow: 0 0 15px var(--primary); transform: scale(1.1); }
+        .btn-icon.danger:hover { background: #ef4444; box-shadow: 0 0 15px #ef4444; }
+
+        /* Loader */
+        .loader { text-align: center; color: var(--primary); font-size: 1.2rem; font-weight: bold; margin-top: 80px; display: none; flex-direction: column; gap: 15px; align-items: center;}
+        .loader i { animation: spin 1s linear infinite; font-size: 2.5rem;}
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* --- PLAYER BAR --- */
+        .player-bar {
+            height: 105px; background: rgba(9, 9, 11, 0.95); border-top: 1px solid var(--glass-border);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 30px;
+            backdrop-filter: blur(25px); position: relative; z-index: 100;
+        }
+        
+        .now-playing { display: flex; align-items: center; gap: 20px; width: 30%; }
+        .np-cover { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid #222; box-shadow: 0 0 20px rgba(0,0,0,0.6); }
+        .np-cover.spin { animation: spinDisk 5s linear infinite; }
+        @keyframes spinDisk { 100% { transform: rotate(360deg); } }
+        
+        .np-info { display: flex; flex-direction: column; overflow: hidden; white-space: nowrap;}
+        .np-title { font-weight: 700; font-size: 1.15rem; margin-bottom: 5px; }
+        .np-artist { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* Controls */
+        .controls-wrapper { display: flex; flex-direction: column; align-items: center; width: 40%; gap: 12px;}
+        .controls { display: flex; align-items: center; gap: 30px; }
+        .ctrl-btn { background: none; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; transition: 0.2s;}
+        .ctrl-btn:hover { color: white; }
+        .play-btn {
+            width: 52px; height: 52px; border-radius: 50%; background: white; color: black;
+            display: flex; align-items: center; justify-content: center; font-size: 1.3rem; cursor: pointer; border: none;
+            box-shadow: 0 4px 15px rgba(255,255,255,0.2); transition: 0.2s; padding-left: 4px; position: relative;
+        }
+        .play-btn.playing { padding-left: 0; } 
+        .play-btn:hover { transform: scale(1.1); box-shadow: 0 4px 20px var(--primary-glow);}
+        
+        .play-loader { display: none; font-size: 1.3rem; color: black; animation: spin 1s linear infinite; }
+
+        /* Tiến độ */
+        .progress-container { display: flex; align-items: center; gap: 15px; width: 100%; }
+        .time { font-size: 0.85rem; font-weight: 500; color: var(--text-muted); min-width: 45px; text-align: center;}
+        .progress-bar { flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; cursor: pointer; position: relative; overflow: hidden;}
+        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 3px; pointer-events: none;}
+        
+        /* Âm lượng */
+        .volume-container { display: flex; align-items: center; justify-content: flex-end; width: 30%; gap: 15px;}
+        .vol-bar { width: 100px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; cursor: pointer; position: relative; overflow: hidden;}
+        .vol-fill { height: 100%; width: 100%; background: white; border-radius: 3px; pointer-events: none;}
+
+        #toast { position: fixed; bottom: 130px; right: 30px; background: var(--primary); color: white; padding: 15px 30px; border-radius: 12px; font-weight: 600; box-shadow: 0 10px 30px var(--primary-glow); transform: translateX(200%); transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 999; font-size: 1.05rem; display: flex; align-items: center; gap: 10px;}
+        #toast.show { transform: translateX(0); }
+    </style>
+</head>
+<body>
+
+    <div id="toast"><i class="fa-solid fa-bell"></i> <span id="toastMsg">Thông báo</span></div>
+
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="logo"><i class="fa-solid fa-compact-disc"></i> Kzoro Bot Music</div>
+            
+            <div class="nav-menu">
+                <a class="nav-item active" onclick="switchTab('explore')" id="tabExplore">
+                    <i class="fa-solid fa-globe"></i> Khám Phá (YouTube)
+                </a>
+                <a class="nav-item" onclick="switchTab('playlist')" id="tabPlaylist">
+                    <i class="fa-solid fa-music"></i> Nhạc Máy Của Tôi
+                </a>
+            </div>
+
+            <div class="divider"></div>
+
+            <div id="sideInfo" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; text-align: center;">
+                Sử dụng Data API. Nghe Full và <b>Tải Nhạc Trực Tiếp</b> không cần web thứ 3!
+            </div>
+
+            <div id="playlistActions" style="display: none; flex-direction: column;">
+                
+                <input type="file" id="fileInput" accept="audio/*" multiple style="display: none;" onchange="importLocalAudio(this.files)">
+                <input type="file" id="folderInput" accept="audio/*" webkitdirectory directory multiple style="display: none;" onchange="importLocalAudio(this.files)">
+                
+                <button class="btn-vip" onclick="document.getElementById('fileInput').click()">
+                    <i class="fa-solid fa-file-audio"></i> Chọn File(s) MP3
+                </button>
+                <button class="btn-ghost" onclick="document.getElementById('folderInput').click()">
+                    <i class="fa-solid fa-folder-open"></i> Chọn Nguyên Thư Mục
+                </button>
+
+                <div class="divider"></div>
+
+                <button class="btn-ghost" onclick="downloadLocalZIP()">
+                    <i class="fa-solid fa-file-zipper"></i> Nén ZIP Tải Về
+                </button>
+                <button class="btn-ghost" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" onclick="clearLocal()">
+                    <i class="fa-solid fa-trash"></i> Xóa Hết Nhạc
+                </button>
+            </div>
+            
+            <a href="tools.html" class="btn-ghost" style="margin-top: auto; text-decoration: none; border-color: transparent;">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại Menu
+            </a>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <div class="header">
+                <a href="tools.html" class="back-btn" title="Về trang Tools" style="color: white; font-size: 1.5rem; text-decoration: none; padding-right: 15px;"><i class="fa-solid fa-chevron-left"></i></a>
+                
+                <div class="search-box" id="searchBox">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Tìm tên bài hát hoặc link YouTube..." onkeypress="searchMusicOnline(event)">
+                </div>
+            </div>
+            
+            <div class="content-area">
+                <div id="loader" class="loader"><i class="fa-solid fa-circle-notch"></i> <span id="loaderText">Đang gọi Bot API...</span></div>
+                <div class="song-list" id="viewList">
+                    <div style="text-align:center; margin-top: 60px;">
+                        <i class="fa-brands fa-youtube" style="font-size: 4rem; color: var(--glass-border); margin-bottom: 20px;"></i>
+                        <p style="color:var(--text-muted); font-size: 1.1rem;">Nhập từ khóa và ấn Enter. Bot sẽ lấy nhạc cho bạn!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDIO ENGINE CHÍNH -->
+    <audio id="mainAudio"></audio>
+
+    <!-- BOTTOM BAR -->
+    <div class="player-bar">
+        <div class="now-playing">
+            <img src="./avt.jpg" alt="Cover" class="np-cover" id="npCover">
+            <div class="np-info">
+                <div class="np-title" id="npTitle">Kzoro Ultimate</div>
+                <div class="np-artist" id="npArtist">Chưa chọn bài hát</div>
+            </div>
+        </div>
+
+        <div class="controls-wrapper">
+            <div class="controls">
+                <button class="ctrl-btn" onclick="prevTrack()"><i class="fa-solid fa-backward-step"></i></button>
+                <button class="play-btn" id="playBtn" onclick="togglePlay()">
+                    <i class="fa-solid fa-play" id="playIcon"></i>
+                    <i class="fa-solid fa-circle-notch play-loader" id="playLoader"></i>
+                </button>
+                <button class="ctrl-btn" onclick="nextTrack()"><i class="fa-solid fa-forward-step"></i></button>
+            </div>
+            <div class="progress-container">
+                <span class="time" id="timeCurrent">0:00</span>
+                <div class="progress-bar" id="progressBar" onclick="seek(event)">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <span class="time" id="timeTotal">0:00</span>
+            </div>
+        </div>
+
+        <div class="volume-container">
+            <i class="fa-solid fa-volume-high" style="color: var(--text-muted);"></i>
+            <div class="vol-bar" id="volBar" onclick="setVolume(event)">
+                <div class="vol-fill" id="volFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================
+           1. CẤU HÌNH API Y HỆT MÃ BOT
+        ========================================== */
+        const YOUTUBE_API_KEY = "AIzaSyCjp5YPl8C5px85e8lS-dku5x08fKgBpKo"; 
+
+        /* ==========================================
+           2. KHỞI TẠO BIẾN
+        ========================================== */
+        let currentTab = 'explore'; 
+        let onlineResults = []; 
+        let localPlaylist = [];
+        
+        let activeQueue = []; 
+        let currentIndex = -1;
+        let playingContext = 'none'; 
+
+        const audio = document.getElementById('mainAudio');
+        const playBtn = document.getElementById('playBtn');
+        const playIcon = document.getElementById('playIcon');
+        const playLoader = document.getElementById('playLoader');
+        const viewList = document.getElementById('viewList');
+        const loader = document.getElementById('loader');
+
+        /* ==========================================
+           3. ĐIỀU HƯỚNG TAB
+        ========================================== */
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tabExplore').classList.toggle('active', tab === 'explore');
+            document.getElementById('tabPlaylist').classList.toggle('active', tab === 'playlist');
+            
+            document.getElementById('searchBox').style.display = tab === 'explore' ? 'flex' : 'none';
+            document.getElementById('playlistActions').style.display = tab === 'playlist' ? 'flex' : 'none';
+            document.getElementById('sideInfo').style.display = tab !== 'playlist' ? 'block' : 'none';
+
+            if(tab === 'explore') {
+                document.getElementById('pageTitle').innerText = "Khám Phá Nhạc Mới";
+                renderList(onlineResults, 'explore');
+            } else {
+                document.getElementById('pageTitle').innerText = `Nhạc Local Của Tôi (${localPlaylist.length})`;
+                renderList(localPlaylist, 'playlist');
+            }
+        }
+
+        /* ==========================================
+           4. TÌM KIẾM
+        ========================================== */
+        async function searchMusicOnline(e) {
+            if(currentTab === 'explore' && e.key === 'Enter') {
+                const query = document.getElementById('searchInput').value.trim();
+                if(!query) return;
+
+                viewList.innerHTML = '';
+                loader.style.display = 'flex';
+                document.getElementById('loaderText').innerText = "Đang tìm kiếm thông tin...";
+
+                try {
+                    let videoId = null;
+
+                    if (query.indexOf("https://") === 0) {
+                        const urlsplit = query.split(/^.*(youtu.be\/|v\/|embed\/|watch\?|youtube.com\/user\/[^#]*#([^\/]*?\/)*)\??v?=?([^#\&\?]*).*/);
+                        videoId = urlsplit[3];
+                        
+                        onlineResults = [{
+                            id: videoId,
+                            title: "Bài hát từ Link YouTube",
+                            artist: "Youtube Stream",
+                            cover: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+                            type: 'online'
+                        }];
+                        loader.style.display = 'none';
+                        renderList(onlineResults, 'explore');
+                        return;
+                    }
+
+                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=15&q=${encodeURIComponent(query)}&type=video&key=${YOUTUBE_API_KEY}`;
+                    const res = await fetch(searchUrl);
+                    const data = await res.json();
+                    
+                    loader.style.display = 'none';
+
+                    if(data.items && data.items.length > 0) {
+                        onlineResults = data.items.map(item => ({
+                            id: item.id.videoId,
+                            title: decodeEntities(item.snippet.title),
+                            artist: item.snippet.channelTitle,
+                            cover: `https://img.youtube.com/vi/${item.id.videoId}/maxresdefault.jpg`,
+                            type: 'online'
+                        }));
+                        renderList(onlineResults, 'explore');
+                    } else {
+                        viewList.innerHTML = '<p style="color:#9ca3af; text-align:center; font-size: 1.1rem; margin-top:30px;">Không tìm thấy bài hát nào.</p>';
+                    }
+                } catch(err) {
+                    loader.style.display = 'none';
+                    showToast("Lỗi API Tìm kiếm Google, vui lòng thử lại!", "#ef4444");
+                }
+            }
+        }
+
+        function decodeEntities(encodedString) {
+            var textArea = document.createElement('textarea');
+            textArea.innerHTML = encodedString;
+            return textArea.value;
+        }
+
+        /* ==========================================
+           5. LOCAL MP3 VÀ NÉN ZIP
+        ========================================== */
+        function importLocalAudio(files) {
+            const arr = Array.from(files).filter(f => f.type.startsWith('audio/'));
+            if(arr.length === 0) return alert("Không tìm thấy file MP3 hợp lệ nào!");
+
+            arr.forEach(f => {
+                localPlaylist.unshift({
+                    id: Date.now() + Math.random(),
+                    title: f.name.replace(/\.[^/.]+$/, ""),
+                    artist: "Local MP3",
+                    cover: "./avt.jpg",
+                    streamUrl: URL.createObjectURL(f),
+                    fileObj: f, 
+                    type: 'local'
+                });
+            });
+            renderList(localPlaylist, 'playlist');
+            document.getElementById('pageTitle').innerText = `Nhạc Local Của Tôi (${localPlaylist.length})`;
+            
+            document.getElementById('fileInput').value = '';
+            document.getElementById('folderInput').value = '';
+            showToast(`Đã thêm ${arr.length} bài hát vào Local!`, "var(--primary)");
+        }
+
+        function clearLocal() {
+            if(!confirm("Xóa toàn bộ nhạc Local?")) return;
+            localPlaylist = [];
+            renderList(localPlaylist, 'playlist');
+            document.getElementById('pageTitle').innerText = "Nhạc Local Của Tôi (0)";
+            if(playingContext === 'playlist') { 
+                audio.pause(); 
+                setPlayIcon('play');
+            }
+        }
+
+        async function downloadLocalZIP() {
+            if(localPlaylist.length === 0) return alert("Thư viện Local trống!");
+            
+            showToast("Đang nén File ZIP... Đừng tắt tab nhé!", "#f59e0b");
+            const zip = new JSZip();
+            const folder = zip.folder("Kzoro_Playlist");
+
+            localPlaylist.forEach(song => { folder.file(`${song.title}.mp3`, song.fileObj); });
+
+            const content = await zip.generateAsync({ type: "blob" });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(content); a.download = "Kzoro_Playlist.zip";
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            
+            showToast("Tải ZIP thành công!", "var(--primary)");
+        }
+
+        /* ==========================================
+           6. TẢI FILE MP3 TRỰC TIẾP (BỎ WEB THỨ 3)
+        ========================================== */
+        async function downloadMp3(videoId, encodedTitle, e) {
+            e.stopPropagation();
+            const title = decodeURIComponent(encodedTitle);
+            showToast("⏳ Đang xuất file MP3...", "#f59e0b");
+            
+            try {
+                // 1. Lấy key ngẫu nhiên từ Github
+                const keyRes = await fetch('https://raw.githubusercontent.com/quyenkaneki/data/main/sing.json');
+                const keyData = await keyRes.json();
+                const randomAPIKEY = keyData.keySing[Math.floor(Math.random() * keyData.keySing.length)].API_KEY;
+
+                // 2. Gọi API Rapid để lấy link tải trực tiếp
+                const options = {
+                    method: 'GET',
+                    headers: {
+                        'x-rapidapi-host': 'youtube-mp36.p.rapidapi.com',
+                        'x-rapidapi-key': randomAPIKEY
+                    }
+                };
+                
+                const rapidRes = await fetch(`https://youtube-mp36.p.rapidapi.com/dl?id=${videoId}`, options);
+                const rapidData = await rapidRes.json();
+
+                if(rapidData && rapidData.link) {
+                    showToast("✅ Bắt đầu tải xuống!", "var(--primary)");
+                    // Tạo thẻ a ảo ép trình duyệt tải file về
+                    const a = document.createElement('a');
+                    a.href = rapidData.link;
+                    a.target = '_blank'; // Mở tab ẩn để không bị văng web hiện tại
+                    a.download = `${title}.mp3`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                } else {
+                    throw new Error("Không lấy được link từ RapidAPI");
+                }
+            } catch(error) {
+                // Fallback nếu RapidAPI sập: Dùng Piped
+                showToast("Server bận, đang thử đường dẫn dự phòng...", "#f59e0b");
+                try {
+                    const pipedRes = await fetch(`https://pipedapi.kavin.rocks/streams/${videoId}`);
+                    const pipedData = await pipedRes.json();
+                    const audioStream = pipedData.audioStreams.find(s => s.mimeType.includes('m4a')) || pipedData.audioStreams[0];
+                    
+                    const a = document.createElement('a');
+                    a.href = audioStream.url;
+                    a.target = '_blank';
+                    a.download = `${title}.m4a`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    showToast("✅ Bắt đầu tải xuống (M4A)!", "var(--primary)");
+                } catch(err2) {
+                    showToast("❌ Tải thất bại. Server hiện đang quá tải!", "#ef4444");
+                }
+            }
+        }
+
+        /* ==========================================
+           7. RENDER DANH SÁCH BÀI HÁT
+        ========================================== */
+        function renderList(list, context) {
+            viewList.innerHTML = '';
+            if(list.length === 0) {
+                viewList.innerHTML = `<p style="color:#9ca3af; text-align:center; padding: 40px; font-size: 1.1rem;">Danh sách trống. Hãy thêm nhạc vào nhé!</p>`;
+                return;
+            }
+
+            list.forEach((song, idx) => {
+                const isPlaying = (playingContext === context && currentIndex === idx);
+                const activeCls = isPlaying ? 'playing' : '';
+                
+                const tag = song.type === 'online' ? '<span class="tag tag-online"><i class="fa-brands fa-youtube"></i> ONLINE</span>' 
+                                                   : '<span class="tag tag-local"><i class="fa-solid fa-file-audio"></i> LOCAL</span>';
+                
+                let actionBtn = '';
+                if(context === 'explore') {
+                    // Truyền encodeURIComponent để tránh lỗi dấu nháy đơn (') trong tên bài hát
+                    actionBtn = `<button class="btn-icon" onclick="downloadMp3('${song.id}', '${encodeURIComponent(song.title)}', event)" title="Tải Audio trực tiếp (Không qua web khác)"><i class="fa-solid fa-download"></i></button>`;
+                } else {
+                    actionBtn = `<button class="btn-icon danger" onclick="removeItem(${idx}, event)" title="Xóa"><i class="fa-solid fa-trash"></i></button>`;
+                }
+
+                viewList.innerHTML += `
+                    <div class="song-card ${activeCls}" onclick="playTrack(${idx}, '${context}')">
+                        <div class="s-index">${isPlaying ? '<i class="fa-solid fa-chart-simple" style="color:var(--primary)"></i>' : (idx + 1)}</div>
+                        <img src="${song.cover}" class="s-img" alt="Cover" onerror="this.src='./avt.jpg'">
+                        <div class="s-info">
+                            <div class="s-title" style="color: ${isPlaying ? 'var(--primary)' : '#fff'}">${song.title}</div>
+                            <div class="s-artist">${tag} ${song.artist}</div>
+                        </div>
+                        <div class="s-actions">${actionBtn}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function removeItem(idx, e) {
+            e.stopPropagation();
+            localPlaylist.splice(idx, 1);
+            renderList(localPlaylist, 'playlist');
+            document.getElementById('pageTitle').innerText = `Nhạc Local Của Tôi (${localPlaylist.length})`;
+        }
+
+        /* ==========================================
+           8. TRÌNH PHÁT NHẠC
+        ========================================== */
+        async function playTrack(index, context) {
+            playingContext = context;
+            currentIndex = index;
+            activeQueue = context === 'explore' ? onlineResults : localPlaylist;
+            const track = activeQueue[index];
+
+            // Reset UI Loading
+            document.getElementById('npTitle').innerText = track.title;
+            document.getElementById('npArtist').innerText = track.artist;
+            document.getElementById('npCover').src = track.cover;
+            document.getElementById('npCover').classList.add('spin');
+            
+            document.getElementById('progressFill').style.width = '0%';
+            setPlayIcon('loading');
+
+            if (track.type === 'online') {
+                audio.pause();
+                try {
+                    const keyRes = await fetch('https://raw.githubusercontent.com/quyenkaneki/data/main/sing.json');
+                    const keyData = await keyRes.json();
+                    const randomAPIKEY = keyData.keySing[Math.floor(Math.random() * keyData.keySing.length)].API_KEY;
+
+                    const options = {
+                        method: 'GET',
+                        headers: {
+                            'x-rapidapi-host': 'youtube-mp36.p.rapidapi.com',
+                            'x-rapidapi-key': randomAPIKEY
+                        }
+                    };
+                    
+                    const rapidRes = await fetch(`https://youtube-mp36.p.rapidapi.com/dl?id=${track.id}`, options);
+                    const rapidData = await rapidRes.json();
+
+                    if(rapidData && rapidData.link) {
+                        audio.src = rapidData.link;
+                        audio.play();
+                        setPlayIcon('pause');
+                    } else {
+                        throw new Error("Rapid API rỗng");
+                    }
+                } catch(e) {
+                    showToast("Chuyển sang luồng âm thanh dự phòng...", "#f59e0b");
+                    try {
+                        const pipedRes = await fetch(`https://pipedapi.kavin.rocks/streams/${track.id}`);
+                        const pipedData = await pipedRes.json();
+                        const audioStream = pipedData.audioStreams.find(s => s.mimeType.includes('mp4')) || pipedData.audioStreams[0];
+                        
+                        audio.src = audioStream.url;
+                        audio.play();
+                        setPlayIcon('pause');
+                    } catch(err2) {
+                        setPlayIcon('play');
+                        document.getElementById('npCover').classList.remove('spin');
+                        showToast("Lỗi phát nhạc. Thử bài khác nhé!", "#ef4444");
+                    }
+                }
+            } else {
+                audio.src = track.streamUrl;
+                audio.play();
+                setPlayIcon('pause');
+            }
+            
+            if(currentTab === context) renderList(activeQueue, context);
+        }
+
+        function setPlayIcon(state) {
+            playLoader.style.display = 'none';
+            playIcon.style.display = 'block';
+            
+            if(state === 'play') {
+                playIcon.className = 'fa-solid fa-play';
+                playBtn.classList.remove('playing');
+                document.getElementById('npCover').classList.remove('spin');
+            } else if (state === 'pause') {
+                playIcon.className = 'fa-solid fa-pause';
+                playBtn.classList.add('playing');
+                document.getElementById('npCover').classList.add('spin');
+            } else if (state === 'loading') {
+                playIcon.style.display = 'none';
+                playLoader.style.display = 'block';
+                document.getElementById('npCover').classList.add('spin');
+            }
+        }
+
+        function togglePlay() {
+            if(activeQueue.length === 0) return showToast("Hãy chọn một bài hát để phát!", "#ef4444");
+            
+            if(audio.paused) { 
+                audio.play(); 
+                setPlayIcon('pause');
+            } else { 
+                audio.pause(); 
+                setPlayIcon('play');
+            }
+        }
+
+        function nextTrack() {
+            if(activeQueue.length === 0) return;
+            currentIndex = (currentIndex + 1) % activeQueue.length;
+            playTrack(currentIndex, playingContext);
+        }
+        function prevTrack() {
+            if(activeQueue.length === 0) return;
+            currentIndex = currentIndex - 1 < 0 ? activeQueue.length - 1 : currentIndex - 1;
+            playTrack(currentIndex, playingContext);
+        }
+
+        audio.onended = () => nextTrack();
+
+        /* Tiến trình & Âm lượng */
+        audio.ontimeupdate = () => {
+            if (audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                document.getElementById('progressFill').style.width = pct + '%';
+                document.getElementById('timeCurrent').innerText = formatTime(audio.currentTime);
+                document.getElementById('timeTotal').innerText = formatTime(audio.duration);
+            }
+        };
+
+        function seek(e) {
+            if(!audio.duration) return;
+            const bar = document.getElementById('progressBar');
+            const pct = (e.clientX - bar.getBoundingClientRect().left) / bar.getBoundingClientRect().width;
+            audio.currentTime = pct * audio.duration;
+        }
+
+        audio.volume = 1.0;
+        function setVolume(e) {
+            const bar = document.getElementById('volBar');
+            let vol = (e.clientX - bar.getBoundingClientRect().left) / bar.getBoundingClientRect().width;
+            vol = Math.max(0, Math.min(1, vol));
+            audio.volume = vol;
+            document.getElementById('volFill').style.width = (vol * 100) + '%';
+        }
+
+        function formatTime(secs) {
+            if(!secs) return "0:00";
+            const m = Math.floor(secs / 60); const s = Math.floor(secs % 60);
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        function showToast(msg, color) {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            t.style.background = color;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+</html>
