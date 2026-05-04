@@ -11,6 +11,7 @@ const createWindow = () => {
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    icon: path.join(__dirname, 'icon.ico'), // <--- BẠN THÊM DÒNG NÀY VÀO ĐÂY NHÉ
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
@@ -20,7 +21,7 @@ const createWindow = () => {
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools(); // <--- THÊM 2 DẤU GẠCH CHÉO ĐỂ TẮT CÁI BẢNG CODE ĐEN ĐI
 };
 
 // This method will be called when Electron has finished
